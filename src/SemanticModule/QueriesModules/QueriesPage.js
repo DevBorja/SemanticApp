@@ -11,9 +11,10 @@ import * as Queries from '../Functions/SPARQLQueries.js';
 import {Button, Row, Col, Card, Icon} from 'react-materialize'
 // import M from 'materialize-css';
 import axios from 'axios';
-import {GoogleChart} from './GoogleChart.js'
+//import {GoogleChart} from './GoogleChart.js'
 import {PruebaTabsMat} from './SelectQueryTabs.js'
 import * as DataFunctions from '../Functions/DataFunctions.js'
+import { PlotlyChart } from './PlotlyChart';
 
 // ----------- CAMBIAR EN LA UNIÓN CON I4TSPS ---------
 const imgPath = './img/';
@@ -171,7 +172,7 @@ export class SensorsInfo extends React.Component {
 	}
 
 	getInformationQuery(sensors, groupBy, filter, filterValues){
-		console.log("Tiempo inicio " + Date.now());
+		console.log("Tiempo inicio " + new Date().toISOString());
 		let infor = {'sensors': sensors, 'groupBy': groupBy, 'filter': filter, 'filterValues': filterValues};
 
 		let chartType = lineChartName;
@@ -257,7 +258,7 @@ export class SensorsInfo extends React.Component {
 					loadingQuery: false,
 					allChartData: allChartData,
 				});
-				console.log("Tiempo fin " + Date.now());
+				console.log("Tiempo fin " + new Date().toISOString());
 			}
 			else{
 				this.recursiveInforCall_New(selectedSensors, groupBy, filter, filterValues, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData);
@@ -271,7 +272,7 @@ export class SensorsInfo extends React.Component {
 	}
 
 	getOtherSensorQuery(knownSensors, askedSensors, filterValues, filter){
-		console.log("Tiempo inicio " + Date.now());
+		console.log("Tiempo inicio " + new Date().toISOString());
 		let infor =  {'sensors': askedSensors, 'knownSensors': knownSensors, 'filterValues': filterValues, 'filter': filter};
 
 		let chartType = scatterChartName;
@@ -304,6 +305,7 @@ export class SensorsInfo extends React.Component {
 						this.props.graphURI
 					);
 		console.log(query);
+		console.log("Comi: ",Date.now());
 		axios.post(this.props.usedURL,
 			querystring.stringify({'query': query})
 		)
@@ -347,13 +349,14 @@ export class SensorsInfo extends React.Component {
 					allChartData: allChartData,
 					loadingQuery: false
 				});
-				console.log("Tiempo fin " + Date.now());
+				console.log("Tiempo fin " + new Date().toISOString());
 			}
 			else{
 				this.recursiveOtroSensorCall_New(askedSensors, knownSensors, filterValues, filter, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData);
 			}
 		})
 		.catch((error) => {
+			console.log("Termi: ",Date.now());
 			console.log(error);
 			alert("An error occurred, check the console.log for more info.");
 			this.newQuery();
@@ -389,6 +392,7 @@ export class SensorsInfo extends React.Component {
 	}
 
 	recursiveAnomCall_New(selectedSensors, sensorsDir, parMotor, filter, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData){
+		console.log(nResponses);
 		var query = Queries.getInformationQueryIndividual(
 						selectedSensors[nResponses],
 						{},
@@ -401,6 +405,7 @@ export class SensorsInfo extends React.Component {
 			querystring.stringify({'query': query})
 		)
 		.then((response) => {
+			console.log(response);
 			const sensorId = selectedSensors[nResponses];
 			if (response.data["results"]["bindings"].length > 1){
 				var result = DataFunctions.parseResponseData(
@@ -722,7 +727,7 @@ export class SensorsInfo extends React.Component {
 			</Card>);
 
 		const chartCard = (showChart && !noAnom) &&
-			(<GoogleChart
+			(<PlotlyChart
 				allChartData={allChartData}
 				chartType={chartType}
 				longDateFormat={longDateFormat}

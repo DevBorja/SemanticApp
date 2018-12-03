@@ -139,8 +139,27 @@ export class ParseData extends React.Component {
 		let wholeData = '';
 
 		console.log("Tiempo inicio " + Date.now());
-		this.insertDataRecursive(i, cont, parsedValues, parsedTimestamps, infoForParsing['virtPrefixes'], infoForParsing['sensorName'], infoForParsing['observationType'], infoForParsing['valueType'], dataToInsert, wholeData);
+		//this.insertDataRecursive(i, cont, parsedValues, parsedTimestamps, infoForParsing['virtPrefixes'], infoForParsing['sensorName'], infoForParsing['observationType'], infoForParsing['valueType'], dataToInsert, wholeData);
+		this.CreateFile(parsedValues, parsedTimestamps, infoForParsing['virtPrefixes'], infoForParsing['sensorName'], infoForParsing['observationType'], infoForParsing['valueType']);
 	}
+
+	CreateFile(values, timestamps, prefixes, sensorName, observationType, valueType){
+	
+		let wholeData = "";
+		for(let x = 0; x < values.length; x++){
+			let dataToInsert = Parser.parseDataRecursive(x, values, timestamps, prefixes, sensorName, observationType, valueType);
+			wholeData += `${dataToInsert}\n`;
+		}
+
+		this.setState({
+			dataInserted: true,
+			insertingData: false,
+			insertState: "",
+			fileContent: wholeData,
+		})
+	
+	}
+	
 
 	insertDataRecursive(index, cont, values, timestamps, prefixes, sensorName, observationType, valueType, dataToInsert, wholeData){
 		dataToInsert += Parser.parseDataRecursive(index, values, timestamps, prefixes, sensorName, observationType, valueType);
