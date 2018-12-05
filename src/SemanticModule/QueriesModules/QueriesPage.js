@@ -177,13 +177,15 @@ export class SensorsInfo extends React.Component {
 
 		let chartType = lineChartName;
 		let longDateFormat = true;
-		if (groupBy['groupBy']){
-			chartType = barChartName;
-			longDateFormat = false;
-		}
-		else if (filterValues['filter']) {
-			chartType = scatterChartName;
-		}
+
+		[chartType,longDateFormat] = DataFunctions.getGraphRecommendation("info", groupBy['groupBy'], filterValues['filter']);
+		// if (groupBy['groupBy']){
+		// 	chartType = barChartName;
+		// 	longDateFormat = false;
+		// }
+		// else if (filterValues['filter']) {
+		// 	chartType = scatterChartName;
+		// }
 
 		this.setState({
 			showQueries: false,
@@ -275,7 +277,10 @@ export class SensorsInfo extends React.Component {
 		console.log("Tiempo inicio " + new Date().toISOString());
 		let infor =  {'sensors': askedSensors, 'knownSensors': knownSensors, 'filterValues': filterValues, 'filter': filter};
 
-		let chartType = scatterChartName;
+		let chartType = lineChartName;
+		let longDateFormat = true;
+
+		[chartType,longDateFormat] = DataFunctions.getGraphRecommendation("other", false, false);
 
 		this.setState({
 			showQueries: false,
@@ -283,7 +288,7 @@ export class SensorsInfo extends React.Component {
 			queryInfor: infor,
 			queryType: 'otro',
 			chartType: chartType,
-			longDateFormat: true,
+			longDateFormat: longDateFormat,
 		});
 
 		let numberOfResponses = 0;
@@ -305,7 +310,7 @@ export class SensorsInfo extends React.Component {
 						this.props.graphURI
 					);
 		console.log(query);
-		console.log("Comi: ",Date.now());
+		//console.log("Comi: ",Date.now());
 		axios.post(this.props.usedURL,
 			querystring.stringify({'query': query})
 		)
@@ -356,7 +361,7 @@ export class SensorsInfo extends React.Component {
 			}
 		})
 		.catch((error) => {
-			console.log("Termi: ",Date.now());
+			//console.log("Termi: ",Date.now());
 			console.log(error);
 			alert("An error occurred, check the console.log for more info.");
 			this.newQuery();
@@ -371,7 +376,10 @@ export class SensorsInfo extends React.Component {
 
 		let infor = {'sensors': selectedSensors, 'sensorsDir':sensorsDir, 'parMotor':parMotor, 'filter':filter};
 
-		let chartType = scatterChartName;
+		let chartType = lineChartName;
+		let longDateFormat = true;
+
+		[chartType,longDateFormat] = DataFunctions.getGraphRecommendation("anom", false, false);
 
 		this.setState({
 			showQueries: false,
@@ -379,7 +387,7 @@ export class SensorsInfo extends React.Component {
 			queryInfor: infor,
 			queryType: 'anom',
 			chartType: chartType,
-			longDateFormat: true,
+			longDateFormat: longDateFormat,
 		});
 
 		let numberOfResponses = 0;

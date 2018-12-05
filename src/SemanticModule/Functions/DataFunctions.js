@@ -3,7 +3,7 @@
 // Funciones para el tratamiento de los resultados de las consultas.
 // --------------------------------------------------------------
 
-const maxPoints = 4500;
+const maxPoints = 50000;
 const _ = require('lodash');
 
 const propertyNames = {
@@ -296,6 +296,18 @@ export function getAnomaliasValues(selectedSensors, sensorDir, sensorValues, sen
 	let anomDatetimes = [];
 	let anomValues = {}
 
+	let reducedAnomResults = {};
+	let reducedAnomDatetimes = {};
+
+	selectedSensors.forEach((sensorId) => {
+		var reducedResults = reduceSensorValues(sensorValues[sensorId], sensorDatetimes[selectedSensors[0]], selectedSensors);
+		reducedAnomResults[sensorId] = reducedResults['values'];
+		reducedAnomDatetimes[sensorId] = reducedResults['datetimes'];
+	});
+
+	sensorValues = reducedAnomResults;
+	sensorDatetimes = reducedAnomDatetimes;
+
 	const datetimes = sensorDatetimes[selectedSensors[0]];
 
 	selectedSensors.forEach((sensorId) => {
@@ -308,6 +320,8 @@ export function getAnomaliasValues(selectedSensors, sensorDir, sensorValues, sen
 		}
 	});
 
+	//console.log("DIRECCION: ",sensorDir);
+
 	anomDatetimes.push(datetimes[0]);
 
 	let primSensor = selectedSensors[0];
@@ -318,32 +332,50 @@ export function getAnomaliasValues(selectedSensors, sensorDir, sensorValues, sen
 			var booleans = [];
 			if (sensorDir[primSensor] === 'up' && prevValues[primSensor] < value )
 				booleans.push(true);
-			else if (sensorDir[primSensor] === 'down' && prevValues[primSensor] > value )
+			else if (sensorDir[primSensor] === 'down' && prevValues[primSensor] > value ){
 				booleans.push(true);
-			else if (prevValues[primSensor] !== value)
+				// console.log("DOWN", prevValues[primSensor], value);
+			}
+			else if (prevValues[primSensor] !== value){
 				booleans.push(false);
+				// console.log("DIFF", prevValues[primSensor], value);
+			}
 
 			restoSensores.forEach((sensorId) => {
 				if (sensorDir[sensorId] === 'up' && prevValues[sensorId] < sensorValues[sensorId][i] )
 					booleans.push(true);
-				else if (sensorDir[sensorId] === 'down' && prevValues[sensorId] > sensorValues[sensorId][i] )
+				else if (sensorDir[sensorId] === 'down' && prevValues[sensorId] > sensorValues[sensorId][i] ){
 					booleans.push(true);
-				else if (prevValues[sensorId] !== sensorValues[sensorId][i])
+					// console.log("DOWN", prevValues[sensorId], sensorValues[sensorId][i]);
+				}
+				else if (prevValues[sensorId] !== sensorValues[sensorId][i]){
 					booleans.push(false);
+					// console.log("DIFF", prevValues[sensorId], sensorValues[sensorId][i]);
+				}
 			});
 			if (!(booleans.every(allTrue) || booleans.every(allFalse))) {
+				// console.log("ANOMALIA!");
+				anomValues[primSensor].push(prevValues[primSensor]);
 				anomValues[primSensor].push(value);
 				restoSensores.forEach((sensorId) => {
+					anomValues[sensorId].push(prevValues[sensorId]);
 					anomValues[sensorId].push(sensorValues[sensorId][i]);
 				});
 			}
 			else{
 				anomValues[primSensor].push("NaN");
+				anomValues[primSensor].push("NaN");
 				restoSensores.forEach((sensorId) => {
+					anomValues[sensorId].push("NaN");
 					anomValues[sensorId].push("NaN");
 				});
 			}
+			anomDatetimes.push(datetimes[i-1]);
 			anomDatetimes.push(datetimes[i]);
+			prevValues[primSensor] = value;
+			restoSensores.forEach((sensorId) => {
+				prevValues[sensorId] = sensorValues[sensorId][i];
+			});
 		}
 		else if (!prevValues[primSensor] && !isNaN(value)){
 			prevValues[primSensor] = value;
@@ -353,23 +385,25 @@ export function getAnomaliasValues(selectedSensors, sensorDir, sensorValues, sen
 		}
 		else{
 			anomValues[primSensor].push("NaN");
+			anomValues[primSensor].push("NaN");
+			anomDatetimes.push(datetimes[i-1]);
 			anomDatetimes.push(datetimes[i]);
 			restoSensores.forEach((sensorId) => {
+				anomValues[sensorId].push("NaN");
 				anomValues[sensorId].push("NaN");
 			});
 		}
 	});
 
-	let reducedAnomResults = {};
-	let reducedAnomDatetimes = {};
+	console.log();
 
 	selectedSensors.forEach((sensorId) => {
-		var reducedResults = reduceSensorValues(anomValues[sensorId], datetimes, selectedSensors);
-		reducedAnomResults[sensorId] = reducedResults['values'];
-		reducedAnomDatetimes[sensorId] = reducedResults['datetimes'];
+		reducedAnomDatetimes[sensorId] = anomDatetimes;
 	});
 
-	return {'anomValues':reducedAnomResults, 'anomDatetimes':reducedAnomDatetimes};
+	console.log("RTA2: ",anomValues,reducedAnomDatetimes);
+	
+	return {'anomValues':anomValues, 'anomDatetimes':reducedAnomDatetimes};
 }
 
 export function getInfoSensores(results){
@@ -430,6 +464,29 @@ export function getInfoSensores(results){
 	});
 
 	return infoSensores;
+}
+
+// ------------------- FUNCIÓN "getGraphRecommendation" -------------------
+//Consulta para determinar  el tipo de grafico a mostrar
+export function getGraphRecommendation(queryType, sensor, graphURI) {
+	let chartType = "timeseriesplot";
+	let longDateFormat = true;
+	if(queryType == "info"){
+		if (sensor){
+			chartType = "barchart";
+			longDateFormat = false;
+		}
+		else if (graphURI) {
+			chartType = "scatterplot";
+		}
+	}
+	else if(queryType == "other"){
+		chartType = "scatterplot";
+	}
+	else if(queryType == "anom"){
+		chartType = "customtimeseriesplot";
+	}
+	return [chartType,longDateFormat];
 }
 
 // -------------------- FUNCIONES AUXILIARES --------------------
@@ -579,3 +636,4 @@ function allTrue(value){
 function allFalse(value){
 	return value === false;
 }
+
