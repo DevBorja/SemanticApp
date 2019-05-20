@@ -121,7 +121,7 @@ export class ParseData extends React.Component {
 			}
 		})
 		.catch((error) => {
-			alert("Ha ocurrido un error. Mirar en la consola para más información.");
+			alert("An error has occurred. Please check the console for more information.");
 			console.log(error);
 		});
 	}
@@ -300,8 +300,8 @@ export class ParseData extends React.Component {
 		const leyendaSensores = (selectFile && showLeyenda) &&
 			(<div className="card">
 	            <div className="card-content">
-	              <span className="card-title blue-text text-darken-3">Sensores disponibles: </span>
-					<p> Los sensores disponibles actualmente en el sistema para esta máquina son: </p>
+	              <span className="card-title blue-text text-darken-3">Available sensors: </span>
+					<p> The sensors that are currently available for this machine are the following: </p>
 					<div className="margin-top">
 						{listaSensores}
 					</div>
@@ -312,21 +312,21 @@ export class ParseData extends React.Component {
 
 		if (error === 'noFile'){
 			errorCard = (<Row className="red-text">
-						<p className="margin-left"> No se ha seleccionado ningún archivo de datos. </p>
+						<p className="margin-left"> No data file selected. </p>
 					</Row>);
 		}
 		else if (error === 'wrongFile'){
 			errorCard = (<Row className="red-text ">
-						<p className="margin-left"> El nombre del fichero no corresponde a ningún indicador de los sensores contemplados para esta máquina. </p>
+						<p className="margin-left"> The name of the file must match the name of one of the sensors of this machine. </p>
 					</Row>);
 		}
 
 		const selectFileOption = (selectFile) &&
 		(<div className="card">
             <div className="card-content">
-              <span className="card-title blue-text text-darken-3">Seleccionar archivo de datos a insertar</span>
-			  <p>El archivo deberá estar en formato CSV y tener por nombre el indicador del sensor del que aporta los datos. </p>
-			  <p> Los datos a insertar deberán corresponder con alguno de los sensores disponibles en el sistema para la máquina actual.
+              <span className="card-title blue-text text-darken-3">Select data file</span>
+			  <p>The file must be in CSV format and its name must be the name of the sensor. </p>
+			  <p> The name of the file must match the name of one of the sensors of this machine.
 				  <i className="tiny grey-text text-darken-3 material-icons pointer"
 					  onClick={() => {this.showLeyenda();}}>
 					  info
@@ -335,7 +335,7 @@ export class ParseData extends React.Component {
 			  <form action="#">
 				  <div className="file-field input-field">
 					  <div className="btn blue darken-3">
-						  <span>Fichero</span>
+						  <span>File</span>
 						  <input type="file"
 							  ref={input => {this.fileInput = input;}}
 							  accept=".csv"/>
@@ -343,7 +343,7 @@ export class ParseData extends React.Component {
 					  <div className="file-path-wrapper">
 						  <input className="file-path validate"
 							  type="text"
-							  placeholder="Ejemplo: 123XYZ.csv"/>
+							  placeholder="Example: 123XYZ.csv"/>
 					  </div>
 				  </div>
 			  </form>
@@ -352,7 +352,7 @@ export class ParseData extends React.Component {
 				  <a href='#' className="margin-left-data blue-text text-darken-3 valign-wrapper"
 					  onClick={() => this.handleInsertData()}>
 					  <Icon className='blue-text text-darken-3'>play_circle_filled</Icon>
-					  <span className="margin-left"> Comenzar con la inserción de datos. </span>
+					  <span className="margin-left"> Begin data insertion. </span>
 				  </a>
 			  </Row>
             </div>
@@ -360,13 +360,13 @@ export class ParseData extends React.Component {
 
 		let loadingMessage = "";
 		if (insertingData && insertState === 'readingFile'){
-			loadingMessage = (<p> Leyendo los datos del fichero <span className="bold">{fileName}</span> </p>)
+			loadingMessage = (<p> Reading data from file<span className="bold">{fileName}</span> </p>)
 		}
 		else if (insertingData && insertState === 'fixingData'){
-			loadingMessage = (<p> Preprocesando los datos del fichero <span className="bold">{fileName}</span> para corregir ciertos errores antes de ser insertados.</p>)
+			loadingMessage = (<p> Preprocessing the data of file <span className="bold">{fileName}</span> before inserting.</p>)
 		}
 		else{
-			loadingMessage = (<p> Insertando los datos corregidos del fichero <span className="bold">{fileName}</span> en el respositorio de datos. </p>)
+			loadingMessage = (<p> Inserting the processed data from file <span className="bold">{fileName}</span> in the repository. </p>)
 		}
 
 		const loadingInsertData = (insertingData) &&
@@ -374,7 +374,7 @@ export class ParseData extends React.Component {
 			 	<div className="card-content center">
 			    	<span className="card-title blue-text text-darken-3">Insertando datos... </span>
 					{loadingMessage}
-					<p> La operación puede tardar varios minutos. </p>
+					<p> The process may last some minutes. </p>
 					<img className='loading' alt='Cargando' src={`${imgPath}loading_bars.gif`}/>
 				</div>
 			</div>);
@@ -382,21 +382,21 @@ export class ParseData extends React.Component {
 			const dataInsertedCard = (dataInserted) &&
 				(<div className="card">
 					<div className="card-content center">
-						<span className="card-title green-text green-darken-3"><Icon>done</Icon> Datos correctamente insertados.</span>
+						<span className="card-title green-text green-darken-3"><Icon>done</Icon> Data correctly inserted.</span>
 						<Row>
-							<p className="margin-left">Los datos contenidos en el fichero <span className="bold">{fileName}</span> han sido correctamente insertados en el repositorio de datos.</p>
+							<p className="margin-left">The data from file <span className="bold">{fileName}</span> have been correctly inserted in the repository.</p>
 						</Row>
 						<Row>
 							<Col l={6} s={12}>
 								<a href="#" className="blue-text text-darken-3 valign-wrapper" onClick={() => {this.hanldeNewFile();}}>
 									<Icon>insert_drive_file</Icon>
-									Insertar datos de otro fichero.
+									Insert data from another file.
 								</a>
 							</Col>
 							<Col l={6} s={12}>
 								<a href="#" className="blue-text text-darken-3 valign-wrapper" onClick={() => this.handleDownload()}>
 									<Icon>file_download</Icon>
-									Descargar fichero en formato RDF.
+									Download file in RDF format.
 								</a>
 							</Col>
 						</Row>

@@ -91,7 +91,7 @@ export class AnomaliasQueryForm extends React.Component{
 		this.setState({
 			calParMotor: checked,
 		});
-		console.log(checked);
+		//console.log(checked);
 	}
 
     handleClick(sensorId){
@@ -106,7 +106,7 @@ export class AnomaliasQueryForm extends React.Component{
              sensorDir: sensorDir,
           });
 
-		  console.log(sensorDir);
+		  //console.log(sensorDir);
 	}
 
 	handleSwitch(event, sensorId){
@@ -121,7 +121,7 @@ export class AnomaliasQueryForm extends React.Component{
 		   sensorDir: sensorDir,
 		});
 
-		console.log(sensorDir);
+		//console.log(sensorDir);
 	}
 
 	handleRadioChange(event, i){
@@ -145,8 +145,8 @@ export class AnomaliasQueryForm extends React.Component{
 			calParMotor: calParMotor,
 		});
 
-		console.log(sensorDir);
-		console.log(calParMotor);
+		//console.log(sensorDir);
+		//console.log(calParMotor);
 	}
 
 	handleSelectChange(event){
@@ -297,8 +297,8 @@ export class AnomaliasQueryForm extends React.Component{
 
 		const select = (selectedSensors.length > 1)
 			? (<Input s={12} l={6} type='select' defaultValue='predef' onChange={(e) => {this.handleSelectChange(e);}}>
-					<option value='predef'>Relación predefinida</option>
-					<option value='custom'>Relación personalizada</option>
+					<option value='predef'>Predefined relation</option>
+					<option value='custom'>Customized relation</option>
 				</Input>)
 			: (null);
 
@@ -323,12 +323,12 @@ export class AnomaliasQueryForm extends React.Component{
 					</Button>)
 				: (<div className="switch">
 						<label>
-							Inactivo
+							Off
 							<input type="checkbox"
 								onChange={(e) => {this.handleSwitch(e,sensorId);}}
 							/>
 							<span className="lever"></span>
-							Activo
+							On
 						</label>
 					</div>);
             return(
@@ -358,7 +358,7 @@ export class AnomaliasQueryForm extends React.Component{
 				const sensorId = sensorIds[iPar];
 				let sensorName;
 				if (sensorId === 'ParMotor'){
-					sensorName = "Cálculo del par motor";
+					sensorName = "Torque";
 				}
 				else{
 					const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
@@ -391,7 +391,7 @@ export class AnomaliasQueryForm extends React.Component{
 							<Icon>remove</Icon>
 						</Button>
 						<span className={textClass}>
-							Eliminar
+							Delete
 						</span>
 					</Col>
 				</Row>
@@ -404,7 +404,7 @@ export class AnomaliasQueryForm extends React.Component{
 						<Icon>done</Icon>
 					</Button>
 					<span className='grey-text italic margin-left'>
-						Anomalía definida como predefinida.
+						Predefined anomaly.
 					</span>
 				</div>)
 			: (<div className="col s12">
@@ -413,7 +413,7 @@ export class AnomaliasQueryForm extends React.Component{
 						<Icon>add</Icon>
 					</Button>
 					<span className='green-text text-darken-3 margin-left'>
-						Añadir anomalía como predefinida.
+						Add predefined anomaly.
 					</span>
 				</div>);
 
@@ -421,7 +421,7 @@ export class AnomaliasQueryForm extends React.Component{
 			? (<div>
 					<Row>
 						<p className='grey-text'>
-							Especificar la tendencia que debería darse en los valores de los sensores seleccionados en condiciones normales.
+							Indicate the expected tendency that must hold in normal circumstances for the selected sensors.
 						</p>
 					</Row>
 					{sensores}
@@ -432,8 +432,8 @@ export class AnomaliasQueryForm extends React.Component{
 			: (<div>
 					<Row>
 						<Col s={12}>
-							<p className='grey-text'>
-								Elegir una de las relaciones predefinidas, que representan la tendencia que debería darse en los valores de los sensores en condiciones normales.
+							<p className='black-text'>
+								Choose one of the predefined relations, which represent the expected tendency that must hold in normal circumstances for the selected sensors.
 							</p>
 						</Col>
 					</Row>
@@ -451,12 +451,12 @@ export class AnomaliasQueryForm extends React.Component{
 		}
 
 		if (errores['faltaFecha']){
-			erroresFechas = (<p className='red-text'> Falta especificar una fecha.</p>);
+			erroresFechas = (<p className='red-text'> You must select a date.</p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
 		else if (errores['fechasMal']){
-			erroresFechas = (<p className='red-text'> La fecha de inicio no puede ser posterior a la fecha final. </p>);
+			erroresFechas = (<p className='red-text'> The start date cannot be greather than the end date. </p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
@@ -469,21 +469,21 @@ export class AnomaliasQueryForm extends React.Component{
 					</Row>
 					<Row s={12}>
 					 	<p className='blue-text text-darken-3'>
-							Relación que debería darse entre los sensores:
+							Relation that must hold between the sensors:
 						</p>
 					 </Row>
 					{selectedRelType}
 					<Row s={12}>
 					 	<p className='blue-text text-darken-3'>
-							Filtrar resultados por fechas:
+							Filter results by date:
 						</p>
 					 </Row>
 					 <Row className="center">
-					 	<Input s={12} l={6} type='date' label="Desde..."
+					 	<Input s={12} l={6} type='date' label="From..."
 							options={{format: 'yyyy-mm-dd'}}
 					 		onChange={(e, value) => {this.handleFechaInicio(e, value);}}
 							className={fechasClass}/>
-					 	<Input s={12} l={6} type='date' label="Hasta..."
+					 	<Input s={12} l={6} type='date' label="To..."
 							options={{format: 'yyyy-mm-dd'}}
 					 		onChange={(e, value) => {this.handleFechaFin(e, value);}}
 							className={fechasClass}/>
@@ -492,7 +492,7 @@ export class AnomaliasQueryForm extends React.Component{
 					<Row className='center-align'>
 						<Button className='blue darken-3' type='submit' name='action' disabled={buttonDisabled}
 							onClick={() => {this.handleSubmit();}}>
-							Consultar <Icon right>bar_chart</Icon>
+							RUN QUERY 
 		   				</Button>
 					</Row>
 				</div>

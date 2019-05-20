@@ -323,6 +323,7 @@ export class InformationQueryForm extends React.Component{
 
 		const filtrarValores = selectedSensors.map((sensorId) => {
 			const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
+			//console.log("SENSOR: ",sensor);
 			const sensorName = sensor['name'];
 			const labelCheckbox = sensorName + " (" + sensorId + ") : ";
 			const minValue = sensor["minValue"];
@@ -335,21 +336,28 @@ export class InformationQueryForm extends React.Component{
 				? ([minValue, maxValue])
 				: ([values[sensorId][0], values[sensorId][1]]);
 
+				
+				//idoia:borrar
+				const step=0.1;
+				//fin idoia
+				
+				//idoia: en valuePicker quitar step e included
 			const valuePicker = (sensor['valueType'] === 'double')
-				? (<Range
+				? (<Row><Col l={2}>{minValue.toFixed(1)}</Col><Col l={8}><Range
 						min={minValue} max={maxValue}
 						defaultValue={defaultRange}
+						step={step}														
 						disabled={disabled}
 						onAfterChange={(e) => {this.handleRange(e,sensorId);}}
-					/>)
+					/></Col><Col l={2}>{maxValue.toFixed(1)}</Col></Row>)
 				: (<div className="switch">
 						<label>
-							Inactivo
+							Off
 							<input type="checkbox" disabled={disabled}
 								onChange={(r) => {this.handleSwitch(r,sensorId);}}
 							/>
 							<span className="lever"></span>
-							Activo
+							On
 						</label>
 					</div>);
 			return(
@@ -401,57 +409,58 @@ export class InformationQueryForm extends React.Component{
 		let horasClass = '';
 
 		if (openedTabs[0] && errores['faltaFecha']){
-			erroresFechas = (<p className='red-text'> Falta especificar una fecha.</p>);
+			erroresFechas = (<p className='red-text'> You must indicate a date.</p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
 		else if (openedTabs[0] && errores['fechasMal']){
-			erroresFechas = (<p className='red-text'> La fecha de inicio no puede ser posterior a la fecha final. </p>);
+			erroresFechas = (<p className='red-text'> The start date cannot be greater than the end date. </p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
 
 		if (openedTabs[1] && errores['faltaHora']){
-			erroresHoras = (<p className='red-text'> Horas no especificadas correctamente. Faltan campos por rellenar. </p>);
+			erroresHoras = (<p className='red-text'> The hours have not been correctly indicated. </p>);
 			buttonDisabled = true;
 			horasClass = 'error';
 		}
 		else if (openedTabs[1] && errores['horasMal']){
-			erroresHoras = (<p className='red-text'> La hora de inicio no puede ser posterior a la hora final. </p>);
+			erroresHoras = (<p className='red-text'> The start time cannot be greater than the end time. </p>);
 			buttonDisabled = true;
 			horasClass = 'error';
 		}
 
 		return(
-			<Collapsible accordion>
+			<Card>
 
 				<Row>
-					Obtener una gráfica sobre los valores que toman los sensores selecionados
+					<p className="black-text">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Obtain a graph with the values of the selected sensors.</p>
 				</Row>
 
-				<CollapsibleItem header='Filtrar resultados por fechas' onClick={() => {this.handleOpenForm(0)}} icon={formIcons[0]}>
+				<Collapsible accordion className="white">
+				<CollapsibleItem header='Filter results by date' onClick={() => {this.handleOpenForm(0)}} icon={formIcons[0]}>
 					<span className="center">
-					 <Row>
-						 <Col s={12} l={6}>
-							 <Input type='date' label="Desde..." options={{format: 'yyyy-mm-dd'}}
-								 onChange={(e, value) => {this.handleFechaInicio(e, value);}}
-								 className={fechasClass}/>
-						 </Col>
-						 <Col s={12} l={6}>
-							 <Input type='date' label="Hasta..." options={{format: 'yyyy-mm-dd'}}
-								 onChange={(e, value) => {this.handleFechaFin(e, value);}}
-								 className={fechasClass}/>
-						 </Col>
-						 {erroresFechas}
-					 </Row>
-				 </span>
+					<Row>
+						<Col s={12} l={6}>
+							<Input type='date' label="From..." options={{format: 'yyyy-mm-dd'}}
+								onChange={(e, value) => {this.handleFechaInicio(e, value);}}
+								className={fechasClass}/>
+						</Col>
+						<Col s={12} l={6}>
+							<Input type='date' label="To..." options={{format: 'yyyy-mm-dd'}}
+								onChange={(e, value) => {this.handleFechaFin(e, value);}}
+								className={fechasClass}/>
+						</Col>
+						{erroresFechas}
+					</Row>
+				</span>
 				</CollapsibleItem>
 
-				<CollapsibleItem header='Filtrar resultados por horas' onClick={() => {this.handleOpenForm(1)}} icon={formIcons[1]}>
+				<CollapsibleItem header='Filter results by hour' onClick={() => {this.handleOpenForm(1)}} icon={formIcons[1]}>
 					<span className="center">
 						<Row className='grey-text center'>
 							<Col s={12} l={6}>
-								<p> Desde las... (HH:mm:ss) </p>
+								<p> From... (HH:mm:ss) </p>
 								<input id="number" type="number" min="0" max="23"
 									onChange={(e) => {this.handleTimeChange(e, 'horaInicio', 'hor');}}
 									className={horasClass}/>
@@ -465,7 +474,7 @@ export class InformationQueryForm extends React.Component{
 									className={horasClass}/>
 							</Col>
 							<Col s={12} l={6}>
-								<p> Hasta las... (HH:mm:ss) </p>
+								<p> To... (HH:mm:ss) </p>
 								<input id="number" type="number" min="0" max="23"
 									onChange={(e) => {this.handleTimeChange(e, 'horaFin', 'hor');}}
 									className={horasClass}/>
@@ -483,52 +492,54 @@ export class InformationQueryForm extends React.Component{
 					</span>
 				</CollapsibleItem>
 
-				<CollapsibleItem header='Filtrar resultados por valores' onClick={() => {this.handleOpenForm(2)}} icon={formIcons[2]}>
+				<CollapsibleItem header='Filter results by value' onClick={() => {this.handleOpenForm(2)}} icon={formIcons[2]}>
 					<span className="center">
 						{filtrarValores}
 					</span>
 				</CollapsibleItem>
 
-				<CollapsibleItem header='Agrupar resultados para mostrar' onClick={() => {this.handleOpenForm(3)}} icon={formIcons[3]}>
+				<CollapsibleItem header='Group results' onClick={() => {this.handleOpenForm(3)}} icon={formIcons[3]}>
 					<span className="center">
 						<Row>
 							<Col s={12}>
 								<Input name='groupBy' type='checkbox' className='filled-in'
-									value='avg' label='Valor medio (Media aritmética)'
+									value='avg' label='Average value'
 									onChange={(e) => {this.handleAggregates(e);}}
 								/>
 							</Col>
 							<Col s={12}>
 								<Input name='groupBy' type='checkbox' className='filled-in'
-									value='max' label='Valor máximo'
+									value='max' label='Maximum value'
 									onChange={(e) => {this.handleAggregates(e);}}
 								/>
 							</Col>
 							<Col s={12}>
 								<Input name='groupBy' type='checkbox' className='filled-in'
-									value='min' label='Valor mínimo'
+									value='min' label='Minimum value'
 									onChange={(e) => {this.handleAggregates(e);}}
 								/>
 							</Col>
 							<Col s={12}>
 								<Input s={12} type='select' defaultValue='day' onChange={(e) => {this.handleGroupBy(e);}} disabled={groupByDisabled}>
-									<option value='day'>Cada día</option>
-									<option value='hour'>Cada hora</option>
+									<option value='day'>Each day</option>
+									<option value='hour'>Each hour</option>
 								</Input>
 							</Col>
 						</Row>
 					</span>
 				</CollapsibleItem>
 
+				</Collapsible>
+
 				<Row className='center-align form-collap'>
 					<Button className='blue darken-3 topMargin' type='submit'
 						name='action' onClick={() => {this.handleSubmit();}}
 						disabled={buttonDisabled}>
-						Consultar <Icon right>bar_chart</Icon>
+						RUN QUERY 
 						</Button>
-				 </Row>
-
-			</Collapsible>
+				</Row>
+			</Card>
+			
 		)
 	}
 }
@@ -553,12 +564,12 @@ export class InformationQueryForm extends React.Component{
 			 <span className="center">
 				<Row>
 					<Col s={12} l={6}>
-						<Input type='date' label="Desde..." options={{format: 'yyyy-mm-dd'}}
+						<Input type='date' label="From..." options={{format: 'yyyy-mm-dd'}}
 							onChange={(e, value) => {this.handleFechaInicio(e, value);}}
 							className={fechasClass}/>
 					</Col>
 					<Col s={12} l={6}>
-						<Input type='date' label="Hasta..." options={{format: 'yyyy-mm-dd'}}
+						<Input type='date' label="To..." options={{format: 'yyyy-mm-dd'}}
 							onChange={(e, value) => {this.handleFechaFin(e, value);}}
 							className={fechasClass}/>
 					</Col>
@@ -571,14 +582,14 @@ export class InformationQueryForm extends React.Component{
 		<div className="collapsible-header" onClick={() => {this.handleOpenForm(1);}}>
 			<i className={formIconColors[1]}>{formIcons[1]}</i>
 			<div className={formTitleColors[1]}>
-				 Filtrar resultados por horas
+				 Filter results by hour
 			</div>
 		</div>
 		<div className="collapsible-body">
 			<span className="center">
 				<Row className='grey-text center'>
 					<Col s={12} l={6}>
-						<p> Desde las... (HH:mm:ss) </p>
+						<p> From... (HH:mm:ss) </p>
 						<input id="number" type="number" min="0" max="23"
 							onChange={(e) => {this.handleTimeChange(e, 'horaInicio', 'hor');}}
 							className={horasClass}/>
@@ -592,7 +603,7 @@ export class InformationQueryForm extends React.Component{
 							className={horasClass}/>
 					</Col>
 					<Col s={12} l={6}>
-						<p> Hasta las... (HH:mm:ss) </p>
+						<p> To... (HH:mm:ss) </p>
 						<input id="number" type="number" min="0" max="23"
 							onChange={(e) => {this.handleTimeChange(e, 'horaFin', 'hor');}}
 							className={horasClass}/>
@@ -614,7 +625,7 @@ export class InformationQueryForm extends React.Component{
 		<div className="collapsible-header" onClick={() => {this.handleOpenForm(2);}}>
 			<i className={formIconColors[2]}>{formIcons[2]}</i>
 			<div className={formTitleColors[2]}>
-				 Filtrar resultados por valores
+				 Filter results by value
 			</div>
 		</div>
 		<div className="collapsible-body">
@@ -627,7 +638,7 @@ export class InformationQueryForm extends React.Component{
 		<div className="collapsible-header" onClick={() => {this.handleOpenForm(3);}}>
 			<i className={formIconColors[3]}>{formIcons[3]}</i>
 			<div className={formTitleColors[3]}>
-				 Agrupar resultados para mostrar
+				 Group results
 			</div>
 		</div>
 		<div className="collapsible-body">
@@ -653,8 +664,8 @@ export class InformationQueryForm extends React.Component{
 					</Col>
 					<Col s={12}>
 						<Input s={12} type='select' defaultValue='day' onChange={(e) => {this.handleGroupBy(e);}} disabled={groupByDisabled}>
-							<option value='day'>Cada día</option>
-							<option value='hour'>Cada hora</option>
+							<option value='day'>Each day</option>
+							<option value='hour'>Each hour</option>
 						</Input>
 					</Col>
 				</Row>
@@ -667,7 +678,7 @@ export class InformationQueryForm extends React.Component{
 				<Button className='blue darken-3 topMargin' type='submit'
 					name='action' onClick={() => {this.handleSubmit();}}
 					disabled={buttonDisabled}>
-					Consultar <Icon right>bar_chart</Icon>
+					Consult <Icon right>bar_chart</Icon>
 					</Button>
 			 </Row>
 		</div>

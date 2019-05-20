@@ -38,20 +38,20 @@ export class PruebaTabsMat extends React.Component {
 				<div className="row">
 				<div className="col s12">
 				<Tabs className='tab-demo z-depth-1 tabs-fixed-width'>
-					<Tab title="Anomalías" active>
+					<Tab title="Anomalies" active>
 						<AnomaliasQueryForm
 										selectedSensors={selectedSensors}
 							getAnomaliasQuery={(s,p,f) => {this.props.getAnomaliasQuery(s,p,f);}}
 							infoSensores={this.props.infoSensores}
 							infoMaquina={this.props.infoMaquina}/>
 					</Tab>
-					<Tab title="Información" className={inforClassNames}>
+					<Tab title="Information" className={inforClassNames}>
 						<InformationQueryForm
 										selectedSensors={selectedSensors}
 										getInformationQuery={(s,g,f,fv) => {this.props.getInformationQuery(s,g,f,fv);}}
 							infoSensores={this.props.infoSensores}/>
 					</Tab>
-					<Tab title="Relación" className={otroClassNames}>
+					<Tab title="Relation" className={otroClassNames}>
 						<OtroSensorQueryForm
 										selectedSensors={selectedSensors}
 										getOtherSensorQuery={(k,a,v,f) => {this.props.getOtherSensorQuery(k,a,v,f);}}
@@ -69,7 +69,7 @@ export class PruebaTabsMat extends React.Component {
 <ul className="tabs tabs-fixed-width">
 	<li className="tab col s4">
 		<a className="active" href="#anom">
-			Anomalías
+			Anomalies
 			<i className="tiny material-icons tooltipped infoTabs"
 				data-position="bottom"
 				data-tooltip="Búsqueda de anomalías en los valores de los sensores.">
@@ -79,7 +79,7 @@ export class PruebaTabsMat extends React.Component {
 	</li>
 	<li className={inforClassNames}>
 		<a href="#infor">
-			Información
+			Information
 			<i className="tiny material-icons tooltipped infoTabs"
 				data-position="bottom"
 				data-tooltip="Consultas de información general sobre cada sensor.">
@@ -89,7 +89,7 @@ export class PruebaTabsMat extends React.Component {
 	</li>
 	<li className={otroClassNames}>
 		<a href="#otro">
-			Relación
+			Relation
 			<i className="tiny material-icons tooltipped infoTabs"
 				data-position="bottom"
 				data-tooltip="Búsqueda de relaciones entre los valores de los sensores.">

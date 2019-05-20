@@ -6,20 +6,21 @@
 const maxPoints = 50000;
 const _ = require('lodash');
 
+//Esto deberia ir en la ontologia
 const propertyNames = {
-	temperature: 'Temperatura',
-	operationState: 'Estado del sensor',
-	Power: 'Energía',
-	AngularVelocity: 'Velocidad angular',
-	Pressure: 'Presión'
+	temperature: 'Temperature',
+	operationState: 'Sensor On/Off',
+	Power: 'Power',
+	AngularVelocity: 'Angular velocity',
+	Pressure: 'Pressure'
 }
 
-const unitSymbols = {
-	degreeCelsius: '℃',
-	Ampere: 'A',
-	RevolutionPerMinute: 'RPM',
-	Bar: 'bar'
-}
+//const unitSymbols = {
+//	degreeCelsius: '℃',
+//	Ampere: 'A',
+//	RevolutionPerMinute: 'RPM',
+//	Bar: 'bar'
+//}
 
 // ------------------- FUNCIÓN "getFormInfo" -------------------
 // Obtener información sobre la consulta realizada para después
@@ -137,38 +138,37 @@ export function prepareGoogleChartsData(sensorValues, sensorDatetimes, selectedS
 
 			var sensor = _.find(infoSensores, ['indicatorId', sensorId]);
 
-			chartFullData['title'] = "Información del sensor: "+ sensor.name;
+			chartFullData['title'] = "Information of sensor: "+ sensor.name;
 			chartFullData['subtitle'] = "";
 			infoQuery['selectedValues'].forEach((value, i) => {
 				if (i === 0){
 					if (value === 'minValue'){
-						chartFullData['subtitle'] += "Valor mínimo";
+						chartFullData['subtitle'] += "Minimum value";
 					}
 					else if (value === 'maxValue'){
-						chartFullData['subtitle'] += "Valor máximo";
+						chartFullData['subtitle'] += "Maximum value";
 					}
 					else{
-						chartFullData['subtitle'] += "Valor medio";
+						chartFullData['subtitle'] += "Mean value";
 					}
 				}
 				else{
 					if (value === 'minValue'){
-						chartFullData['subtitle'] += ", valor mínimo.";
+						chartFullData['subtitle'] += ", minimum value.";
 					}
 					else if (value === 'maxValue'){
-						chartFullData['subtitle'] += ", valor máximo.";
+						chartFullData['subtitle'] += ", maximum value.";
 					}
 					else{
-						chartFullData['subtitle'] += ", valor medio.";
+						chartFullData['subtitle'] += ", mean value.";
 					}
 				}
 			});
 
 			var property = sensor['observedProperty'];
-			var axisLabel;
-			if (sensor['measureUnit'] !== ''){
-				var unit = sensor['measureUnit'];
-				axisLabel = propertyNames[property] + " (" + unitSymbols[unit] + ")";
+			var axisLabel;            
+			if (sensor['measureUnit'] !== '' && sensor['symbol'] !== ''){				
+				axisLabel = propertyNames[property] + " (" + sensor['symbol'] + ")";
 			}
 			else{
 				axisLabel = propertyNames[property] + " (Encendido/Apagado)";
@@ -190,13 +190,13 @@ export function prepareGoogleChartsData(sensorValues, sensorDatetimes, selectedS
 
 		var title;
 		if (infoQuery['type']==='infor'){
-			title = 'Información general.';
+			title = 'Information of sensors.';
 		}
 		else if (infoQuery['type']==='otro'){
-			title = 'Relación entre sensores.';
+			title = 'Relation between sensors.';
 		}
 		else{
-			title = 'Búsqueda de anomalías.';
+			title = 'Anomalies.';
 		}
 		chartFullData['title'] = title;
 
@@ -213,13 +213,13 @@ export function prepareGoogleChartsData(sensorValues, sensorDatetimes, selectedS
 		}
 		else{
 			if (infoQuery['selectedValues'][0] === 'minValue'){
-				chartFullData['subtitle'] = "Valor mínimo.";
+				chartFullData['subtitle'] = "Minimum value.";
 			}
 			else if (infoQuery['selectedValues'][0] === 'maxValue'){
-				chartFullData['subtitle'] = "Valor máximo.";
+				chartFullData['subtitle'] = "Maximum value.";
 			}
 			else{
-				chartFullData['subtitle'] = "Valor medio.";
+				chartFullData['subtitle'] = "Mean value.";
 			}
 		}
 
@@ -236,9 +236,9 @@ export function prepareGoogleChartsData(sensorValues, sensorDatetimes, selectedS
 						properties.push(property);
 					}
 					var axisLabel;
-					if (sensor['measureUnit'] !== ''){
-						var unit = sensor['measureUnit'];
-						axisLabel = propertyNames[property] + " (" + unitSymbols[unit] + ")";
+   
+					if (sensor['measureUnit'] !== '' && sensor['symbol'] !== ''){						
+						axisLabel = propertyNames[property] + " (" + sensor['symbol'] + ")";
 					}
 					else{
 						axisLabel = propertyNames[property] + " (Encendido/Apagado)";
@@ -257,8 +257,8 @@ export function prepareGoogleChartsData(sensorValues, sensorDatetimes, selectedS
 		if (properties.length === 1 && infoQuery['type']==='infor' && infoQuery['selectedValues'][0] === 'resultValue'){
 			let sensorId = selectedSensors[0];
 			let actualSensor = _.find(infoSensores, ['indicatorId', sensorId]);
-			let outlierMax = ['Outlier superior'];
-			let outlierMin = ['Outlier inferior'];
+			let outlierMax = ['Top outlier line'];
+			let outlierMin = ['Bottom outlier line'];
 			sensorValues[sensorId].forEach((value) => {
 				outlierMax.push(actualSensor.maxValue);
 				outlierMin.push(actualSensor.minValue);
@@ -450,10 +450,26 @@ export function getInfoSensores(results){
 		else{
 			infoSensor['measureUnit'] = '';
 		}
+		
+		if (object['symbol']){
+			var symbol = object['symbol']['value'];		
+			infoSensor['symbol'] = symbol;
+		}
+		else{
+			infoSensor['symbol'] = '';
+		}
 
-		if (object['minValue']){
-			infoSensor['minValue'] = parseInt(object['minValue']['value'], 10);
-			infoSensor['maxValue'] = parseInt(object['maxValue']['value'], 10);
+		if (object['minValue']){		
+			//infoSensor['minValue'] = parseInt(object['minValue']['value'], 10);
+			//infoSensor['maxValue'] = parseInt(object['maxValue']['value'], 10);
+			
+			infoSensor['minValue'] = parseFloat(object['minValue']['value']);
+			infoSensor['maxValue'] = parseFloat(object['maxValue']['value']);
+			
+			
+			
+			
+			
 		}
 		else{
 			infoSensor['minValue'] = '';
@@ -469,7 +485,7 @@ export function getInfoSensores(results){
 // ------------------- FUNCIÓN "getGraphRecommendation" -------------------
 //Consulta para determinar  el tipo de grafico a mostrar
 export function getGraphRecommendation(queryType, sensor, graphURI) {
-	let chartType = "timeseriesplot";
+	let chartType = "";
 	let longDateFormat = true;
 	if(queryType == "info"){
 		if (sensor){
@@ -480,12 +496,12 @@ export function getGraphRecommendation(queryType, sensor, graphURI) {
 			chartType = "scatterplot";
 		}
 	}
-	else if(queryType == "other"){
+	/*else if(queryType == "other"){
 		chartType = "scatterplot";
 	}
 	else if(queryType == "anom"){
 		chartType = "customtimeseriesplot";
-	}
+	}*/
 	return [chartType,longDateFormat];
 }
 
@@ -497,13 +513,13 @@ function parseSensorValues(sensorResponse, sensorId, selectValues, selectDateTim
 	let datetimes = [];
 
 	if (selectDateTime === "resultHour"){
-		datetimes.push("Hora");
+		datetimes.push("Time");
 	}
 	else if (selectDateTime === "resultDate"){
-		datetimes.push("Fecha");
+		datetimes.push("Date");
 	}
 	else if (selectDateTime === "resultTime"){
-		datetimes.push("Fecha y hora");
+		datetimes.push("Date and time");
 	}
 
 	var sensor = _.find(infoSensores, ['indicatorId', sensorId]);
@@ -517,13 +533,13 @@ function parseSensorValues(sensorResponse, sensorId, selectValues, selectDateTim
 		sensorValues = {};
 		selectValues.forEach((selectValue) => {
 			if (selectValue === 'avgValue'){
-				sensorValues[selectValue] = ['Valor medio'];
+				sensorValues[selectValue] = ['Mean value'];
 			}
 			else if (selectValue === 'minValue'){
-				sensorValues[selectValue] = ['Valor mínimo'];
+				sensorValues[selectValue] = ['Maximum value'];
 			}
 			else if (selectValue === 'maxValue'){
-				sensorValues[selectValue] = ['Valor máximo'];
+				sensorValues[selectValue] = ['Maximum value'];
 			}
 
 		});

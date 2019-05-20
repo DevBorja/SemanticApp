@@ -79,6 +79,17 @@
 	padding: 0;
 }*/
 
+.btn-chart{
+	padding: 4px;
+}
+
+.card-chart .card-content{
+	padding: 2px;
+}
+.card-chart {
+	text-align: center;
+}
+
 .card .card-content{
 	width: 100%;
 }
@@ -245,7 +256,7 @@ circle {
 	left: 37%;
 }
 
-.ResistanceSensor{
+.ResistorOnOffSensor{
     top: 32%;
     background-color: rgba(236, 99, 13, 0.8);
 }
@@ -257,7 +268,7 @@ circle {
 	left: 37%;
 }
 
-.VentilationSensor{
+.FanOnOffSensor{
     background-color: rgba(225, 236, 13, 0.8);
     top: 44%;
 }
@@ -269,7 +280,7 @@ circle {
 	left: 7%;
 }
 
-.EngineRPMSensor{
+.MotorRPMSensor{
 	top: 85%;
 	left: 17%;
 	background-color: rgba(28, 180, 35, 0.8);
@@ -282,7 +293,7 @@ circle {
 	left: 25%;
 }
 
-.EngineConsumptionSensor{
+.MotorConsumptionSensor{
 	top: 85%;
 	left: 35%;
 	background-color: rgba(70, 135, 199, 0.8);
@@ -312,6 +323,20 @@ circle {
 	top: 85%;
 	left: 68%;
 	background-color: rgba(246, 105, 215, 0.8);
+}
+
+
+/*------ Botellas por turno -------*/
+
+.bottleIcon{
+	top: 82%;
+	left: 76%;
+}
+
+.BottlesPerShiftSensor{
+	top: 85%;
+	left: 84%;
+	background-color: rgba(200, 125, 25, 0.8);
 }
 
 /*-------------- FORMS CUSTOM COLORS --------------*/
@@ -448,9 +473,106 @@ input[type=number].error{
 }
 
 
--------------------------- Icon in the middle -------------
+/*-------------------------- Icon in the middle -------------*/
 
 .middle {
     display: inline-flex;
     vertical-align: middle;
+}
+
+/*----------------------- tooltip -----------------------------*/
+.tooltip {
+  position: relative;
+}
+
+.tooltip-trigger {
+  display: inline-block;
+  text-decoration: underline;
+}
+
+.tooltip-bubble {
+  min-width: 120px;
+  max-width: 210px;
+  position: absolute;
+  z-index: 10;
+}
+
+.tooltip-bubble::after {
+    content: '';
+    position: absolute;
+  }
+
+.tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  padding-bottom: 9px;
+  transform: translateX(-50%);
+  margin-bottom: 15px;
+}
+
+.tooltip-top::after {
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid rgba(0,0,0,.7);
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+.tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  padding-top: 9px;
+  transform: translateX(-50%);
+}
+
+.tooltip-bottom::after {
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 9px solid rgba(0,0,0,.7);
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+.tooltip-left {
+  top: 50%;
+  right: 100%;
+  padding-right: 9px;
+  transform: translateY(-50%);
+}
+
+.tooltip-left::after {
+    border-left: 9px solid rgba(0,0,0,.7);
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+  }
+
+.tooltip-right {
+  top: 50%;
+  left: 100%;
+  padding-left: 9px;
+  transform: translateY(-50%);
+}
+
+.tooltip-right::after {
+    border-right: 9px solid rgba(0,0,0,.7);
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+  }
+
+.tooltip-message {
+  background: rgba(0,0,0,.7);
+  border-radius: 3px;
+  color: #fff;
+  font-size: .75rem;
+  line-height: 1.4;
+  padding: .75em;
+  text-align: center;
 }

@@ -20,7 +20,8 @@ const imgPath = './img/';
 const _ = require('lodash');
 
 const virtuosoLocalURL = 'http://localhost:8890/sparql';
-const virtuosoDebianURL = 'http://35.237.96.154:8890/sparql'; // Cambia cada vez que se inicia la máquina
+const virtuosoDebianURL = 'http://35.224.159.30:8890/sparql'; // Cambia cada vez que se inicia la máquina
+const virtuosoIraURL = 'http://35.237.96.154:8890/sparql';
 const usedURL = virtuosoDebianURL;
 
 const graphURI = "<http://bdi.si.ehu.es/bdi/ontologies/extrusion/sensors#>";
@@ -137,8 +138,8 @@ export class DataSelectMachine extends React.Component {
 		const noMachineInfo = this.state.noMachineInfo;
 
 		const cargando = (state === 'cargando' && !errorLoading && !noMachineInfo)
-			? (<Card s={12} l={8} offset='l2' title="Cargando datos..." className='center'>
-				<img className='loading' alt='Cargando...'
+			? (<Card s={12} l={8} offset='l2' title="Loading data..." className='center'>
+				<img className='loading' alt='Loading...'
 					src={`${imgPath}loading_bars.gif`}
 				/>
 				</Card>)
@@ -146,20 +147,20 @@ export class DataSelectMachine extends React.Component {
 
 		const cardError = (state === 'cargando' && errorLoading) &&
 			(<Card s={12} l={8} offset='l2' title="Error al cargar datos" className='center'>
-				<p>Ha ocurrido un error al cargar los datos necesarios desde el servidor.</p>
-				<p>Vuelva a cargar la página para intentar solucionarlo.</p>
+				<p>An error ocurred while loading data from the server.</p>
+				<p>Try again by reloading the page.</p>
 			</Card>);
 
 		const noMachineError = (state === 'cargando' && noMachineInfo) &&
 			(<Card s={12} l={8} offset='l2'
-				title="Información no disponible"
+				title="Information not available"
 				className='center'
 				actions={
 					<Button className="blue darken-3"
 						onClick={() => {this.selectNewMachine();}}>
-						Elegir otra máquina
+						Choose another machine
 					</Button>}>
-				<p>Actualmente no hay información disponible sobre la máquina seleccionada.</p>
+				<p>Currently there is no information about the selected machine.</p>
 			</Card>);
 
 		let listaMaq = [];
@@ -174,7 +175,7 @@ export class DataSelectMachine extends React.Component {
 	        				<img width="100%" alt={altValue}
 								src={`${imgPath}${tipo}.png`}
 	        				/>}>
-	        			La máquina <span className='bold'> {key} </span>.
+	        			Machine <span className='bold'> {key} </span>.
 	        		</Card>
 	            </Col>
 	        );

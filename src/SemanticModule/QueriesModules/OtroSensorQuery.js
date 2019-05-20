@@ -63,9 +63,9 @@ export class OtroSensorQueryForm extends React.Component{
 					}
 				}
 			});
-			console.log(selectedSensors);
-			console.log(newKnownSensors);
-			console.log(newAskedSensors);
+			//console.log(selectedSensors);
+			//console.log(newKnownSensors);
+			//console.log(newAskedSensors);
 			return {
 				selectedSensors: selectedSensors,
 				knownSensors: newKnownSensors,
@@ -97,8 +97,8 @@ export class OtroSensorQueryForm extends React.Component{
 			askedSensors: newAskedSensors,
 			knownSensors: newKnownSensors,
 		});
-		console.log("askedSensors: " + JSON.stringify(newAskedSensors));
-		console.log("knownSensors: " + JSON.stringify(newKnownSensors));
+		//console.log("askedSensors: " + JSON.stringify(newAskedSensors));
+		//console.log("knownSensors: " + JSON.stringify(newKnownSensors));
 	}
 
 	handleValueChange(event, sensorId){
@@ -163,8 +163,8 @@ export class OtroSensorQueryForm extends React.Component{
 			values: values,
 			filterValues: filterValues,
 		});
-		console.log(filterValues);
-		console.log(values);
+		//console.log(filterValues);
+		//console.log(values);
 	}
 
 	handleFechaInicio(event, value){
@@ -301,7 +301,7 @@ export class OtroSensorQueryForm extends React.Component{
 					: ([values[sensorId][0], values[sensorId][1]]);
 				const valueInput = (isNaN(knownSensors[sensorId]))
 						? (null)
-						: (<Input s={3} label="Valor" className={valorClass}
+						: (<Input s={3} label="Value" className={valorClass}
 								onChange={(e) => {this.handleValueChange(e,sensorId);}}
 							/>);
 				const valuePickerType = (sensor['valueType'] === 'double')
@@ -313,19 +313,19 @@ export class OtroSensorQueryForm extends React.Component{
 							/>)
 						: (<div className="switch">
 								<label>
-									Inactivo
+									Off
 									<input type="checkbox" disabled={disabled}
 										onChange={(e) => {this.handleSwitch(e,sensorId);}}
 									/>
 									<span className="lever"></span>
-									Activo
+									On
 								</label>
 							</div>);
 				const showFilterValues = (isNaN(knownSensors[sensorId]))
 						? (<div>
 								<Col s={12}>
 									<Input name='filterValue' type='checkbox' className='filled-in'
-										label="Filtrar valores para evitar anomalías"
+										label="Filter values to avoid anomalies"
 										onChange={(e) => {this.handleFilterValueChecked(e,sensorId,minValue,maxValue);}}
 									/>
 								</Col>
@@ -335,19 +335,19 @@ export class OtroSensorQueryForm extends React.Component{
 							</div>)
 						: (null);
 				const errorValor = (knownSensors[sensorId] === null)
-					? (<p className='red-text'> Falta indicar el valor especifico del sensor.</p>)
+					? (<p className='red-text'> A value must be indicated for the sensor.</p>)
 					: (null);
 				return(
 					<Row key={sensorId}>
 						<Col s={12}>
-							<p>El sensor de <span className="bold">{sensorName}</span> ({sensorId}) tenga: </p>
+							<p>Sensor <span className="bold">{sensorName}</span> ({sensorId}) has: </p>
 						</Col>
 						<Input s={6} type='select' defaultValue='esp'
 							onChange={(e) => {this.handleSelectChange(e,sensorId);}}
 						>
-							<option value='esp'>Valor específico</option>
-							<option value='min'>Valor mínimo</option>
-							<option value='max'>Valor máximo</option>
+							<option value='esp'>Exact value</option>
+							<option value='min'>Minimum value</option>
+							<option value='max'>Maximum value</option>
 						</Input>
 						{valueInput}
 						<Col s={12}>
@@ -371,12 +371,12 @@ export class OtroSensorQueryForm extends React.Component{
 		}
 
 		if (errores['faltaFecha']){
-			erroresFechas = (<p className='red-text'> Falta especificar una fecha.</p>);
+			erroresFechas = (<p className='red-text'> You must indicate a date.</p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
 		else if (errores['fechasMal']){
-			erroresFechas = (<p className='red-text'> La fecha de inicio no puede ser posterior a la fecha final. </p>);
+			erroresFechas = (<p className='red-text'> The start date cannot be greater than the end date. </p>);
 			buttonDisabled = true;
 			fechasClass = 'error';
 		}
@@ -388,14 +388,13 @@ export class OtroSensorQueryForm extends React.Component{
 			<Card>
 				<div className='form'>
 					<Row>
-						<p className='grey-text'>
-							Comprobar los valores que toman ciertos de los sensores
-							seleccionados cuando el resto toman unos valores determinados.
+						<p className='black-text'>
+							Check the values from some of the selected sensors when the remaining sensors have some specific values.
 						</p>
 					</Row>
 					<Row>
 						<p className='blue-text text-darken-3'>
-							Sensor/es a preguntar:
+							Sensors whose data must be consulted:
 						</p>
 					</Row>
 					<Row>
@@ -403,21 +402,21 @@ export class OtroSensorQueryForm extends React.Component{
 					</Row>
 					<Row>
 						<p className='blue-text text-darken-3'>
-							Qué valores tomarán estos sensores cuando...
+							Which values take these sensors when...
 						</p>
 					</Row>
 					{restoSensores}
 					<Row s={12}>
 					 	<p className='blue-text text-darken-3'>
-							Filtrar resultados por fechas:
+							Filter results by date:
 						</p>
 					 </Row>
 					 <Row className="center">
-					 	<Input s={12} l={6} type='date' label="Desde..."
+					 	<Input s={12} l={6} type='date' label="From..."
 							options={{format: 'yyyy-mm-dd'}}
 					 		onChange={(e, value) => {this.handleFechaInicio(e, value);}}
 							className={fechasClass}/>
-					 	<Input s={12} l={6} type='date' label="Hasta..."
+					 	<Input s={12} l={6} type='date' label="To..."
 							options={{format: 'yyyy-mm-dd'}}
 					 		onChange={(e, value) => {this.handleFechaFin(e, value);}}
 							className={fechasClass}/>
@@ -427,7 +426,7 @@ export class OtroSensorQueryForm extends React.Component{
 						<Button className='blue darken-3' type='submit'
 							name='action' disabled={buttonDisabled}
 							onClick={() => {this.handleSubmit();}}>
-							Consultar <Icon right>bar_chart</Icon>
+							RUN QUERY 
 		   				</Button>
 					</Row>
 				</div>

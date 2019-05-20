@@ -21,7 +21,8 @@ const imgPath = './img/';
 // ----------------------------------------------------
 
 const virtuosoLocalURL = 'http://localhost:8890/sparql';
-const virtuosoDebianURL = 'http://35.237.96.154:8890/sparql'; // Cambia cada vez que se inicia la máquina
+const virtuosoDebianURL = 'http://35.224.159.30:8890/sparql'; // Cambia cada vez que se inicia la máquina
+const virtuosoIraURL = 'http://35.237.96.154:8890/sparql';
 const usedURL = virtuosoDebianURL;
 
 const graphURI = "<http://bdi.si.ehu.es/bdi/ontologies/extrusion/sensors#>";
@@ -80,7 +81,7 @@ export class QueriesSelectMachine extends React.Component {
 				querystring.stringify({'query': query})
 			)
 			.then((response) => {
-				console.log(response);
+				//console.log(response);
 				let results = response.data["results"]["bindings"];
 				if (results.length > 0) {
 					let infoSensores = DataFunctions.getInfoSensores(results);
@@ -130,41 +131,41 @@ export class QueriesSelectMachine extends React.Component {
 		const noMachineInfo = this.state.noMachineInfo;
 
 		const cargando = (state === 'cargando' && !errorLoading && !noMachineInfo)
-			? (<Card s={12} l={8} offset='l2' title="Cargando datos..." className='center'>
-				<img className='loading' alt='Cargando...'
+			? (<Card s={12} l={8} offset='l2' title="Loading data..." className='center'>
+				<img className='loading' alt='Loading...'
 						src={`${imgPath}loading_bars.gif`}
 					/>
 				</Card>)
 			: (null);
 
 		const cardError = (state === 'cargando' && errorLoading) &&
-			(<Card s={12} l={8} offset='l2' title="Error al cargar datos" className='center'>
-				<p>Ha ocurrido un error al cargar los datos necesarios desde el servidor.</p>
-				<p>Vuelva a cargar la página para intentar solucionarlo.</p>
+			(<Card s={12} l={8} offset='l2' title="Error loading data" className='center'>
+				<p>An error has occurred loading data from the server.</p>
+				<p>Try reloading page to solve it.</p>
 			</Card>);
 
 		const noMachineError = (state === 'cargando' && noMachineInfo) &&
 			(<Card s={12} l={8} offset='l2'
-				title="Información no disponible"
+				title="Information not available"
 				className='center'
 				actions={
 					<Button className="blue darken-3"
 						onClick={() => {this.selectNewMachine();}}>
-						Elegir otra máquina
+						Choose another machine
 					</Button>}>
-				<p>Actualmente no hay información disponible sobre la máquina seleccionada.</p>
+				<p>Currently there is no information available for the selected machine.</p>
 			</Card>);
 
 		let listaMaq = [];
 
         _.forEach(machines, (value, key) => {
 			const tipo = value['type'];
-            const altValue = 'Imagen de la máquina ' + key;
+            const altValue = 'Image of machine ' + key;
             listaMaq.push(
 					<div className="col s12 m6 l4">
 						<Card className="center machine_card_consult pointer"  onClick={() => {this.loadMachineInfo(key);}}
 							header={<img width="100%" alt={altValue} src={`${imgPath}${tipo}.png`} />}>
-		        			La máquina <span className='bold'> {key} </span>.
+		        			Machine <span className='bold'> {key} </span>.
 		        		</Card>
 	                </div>
             );

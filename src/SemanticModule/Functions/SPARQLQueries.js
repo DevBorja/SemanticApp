@@ -240,47 +240,48 @@ export function getInfoSensoresQuery(graphURI){
 			'prefix sosa: <http://www.w3.org/ns/sosa/> ' +
 			'prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
 			'prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-			'prefix qumodule: <http://bdi.si.ehu.es/bdi/ontologies/extrusion/quantities#> ' +
-			'select ?sensorId ?name ?sensorType ?observationType ?valueType ?zone ?observedProperty ?measureUnit ?minValue ?maxValue ' +
+			'prefix qudt: <http://bdi.si.ehu.es/bdi/ontologies/extrusion/quantities#> ' +
+			'select ?sensorId ?name ?sensorType ?observationType ?valueType ?zone ?observedProperty ?measureUnit ?symbol ?minValue ?maxValue ' +
 			'from ' + graphURI + ' ' +
-			'where { ' +
-				'?metaSensorType rdf:type owl:Class ; ' +
-				 				'rdfs:subClassOf :Sensor . ' +
-				'?sensorType rdfs:subClassOf ?metaSensorType .  ' +
-				'?metaSensorType rdfs:subClassOf [ rdf:type owl:Restriction ; ' +
-												'owl:onProperty sosa:madeObservation ; ' +
-												'owl:allValuesFrom ?observationType ' +
-											'] . ' +
-				'?observationType rdfs:subClassOf [ rdf:type owl:Restriction ; ' +
-												'owl:onProperty sosa:hasSimpleResult ; ' +
-												'owl:allValuesFrom ?valueType ' +
-											'] . ' +
-				'?sensorType rdfs:subClassOf [ rdf:type owl:Restriction ; ' +
-												'owl:onProperty sosa:observes ; ' +
-												'owl:hasValue ?observedProperty ' +
-											'] . ' +
-				'optional { ' +
-					'?sensorType rdfs:subClassOf [ rdf:type owl:Restriction ; ' +
-													'owl:onProperty :maxValue ; ' +
-													'owl:hasValue ?maxValue ' +
-												'] , ' +
-												'[ rdf:type owl:Restriction ; ' +
-													'owl:onProperty :minValue ; ' +
-													'owl:hasValue ?minValue ' +
-												'] , ' +
-												'[ rdf:type owl:Restriction ; ' +
-			                                    'owl:onProperty :unit ; ' +
-			                                    'owl:hasValue ?measureUnit ] . ' +
-				'} ' +
-				'?sensorName rdf:type ?sensorType ; ' +
-							'rdf:type owl:NamedIndividual ; ' +
-							':indicatorId ?sensorId ; ' +
-							':sensorName ?name . ' +
-				'optional { ?sensorName :zone ?zone . } ' +
-			'} ' +
-			'order by asc(?name)';
+' where {  ' +
+' ?sensorName rdf:type ?sensorType ; rdf:type owl:NamedIndividual ; :indicatorId ?sensorId ; :sensorName ?name .  ' +
+' ?sensorType rdfs:subClassOf ?metaSensorType .  ' +
+' ?metaSensorType rdfs:subClassOf :Sensor .   ' +
+' ?metaSensorType rdfs:subClassOf [ rdf:type owl:Restriction ; owl:onProperty sosa:madeObservation ; owl:allValuesFrom ?observationType ] .  ' +
+' ?observationType rdfs:subClassOf [ rdf:type owl:Restriction ; owl:onProperty sosa:hasSimpleResult ; owl:allValuesFrom ?valueType ] .  ' +
+' ?sensorType rdfs:subClassOf [ rdf:type owl:Restriction ; owl:onProperty sosa:observes ; owl:hasValue ?observedProperty ] .   ' +
+' optional { ?sensorName :unit ?measureUnit . ?measureUnit qudt:symbol ?symbol .}' +
+' optional { ?sensorName :minValue ?minValue. }  ' +
+' optional { ?sensorName :maxValue ?maxValue. }  ' +
+' optional { ?sensorName :zone ?zone. } ' +
+' }order by asc(?name) ';
+//console.log(query);
 	return query;
 }
+
+// ------------------- FUNCIÓN "getGraphRecommendation" -------------------
+//Consulta para determinar  el tipo de grafico a mostrar
+export function getGraphRecommendation(queryType, sensor, graphURI){
+let query = 'prefix : <http://bdi.si.ehu.es/bdi/ontologies/extrusion/visualization#> ' +
+'prefix owl: <http://www.w3.org/2002/07/owl#> ' +
+'prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+'prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+'prefix ins: <http://bdi.si.ehu.es/bdi/ontologies/extrusion/instances#> ' +
+'select ?graph ' +
+' from ' + graphURI +' '+
+' where { :' + queryType + ' :hasRecommendation ?r .' +
+' ?r rdf:type [rdf:type owl:Restriction; ' +
+' owl:onProperty :sensor; '+
+' owl:someValuesFrom ?s ]; ' +
+' :graph ?graph . ' +
+'ins:sensor'+sensor+' rdf:type ?x .' +
+'?x rdfs:subClassOf* ?s . }';
+//console.log(query);
+return query;
+}
+
+
+
 
 // ------------------- FUNCIONES AUXILIARES  -------------------
 
@@ -363,7 +364,7 @@ function getOrderBy(orderBy, groupBy){
     		orderByQuery += '?resultHour';
     	}
     	else{
-    		orderByQuery += '?resultTime';
+    		orderByQuery += 'xsd:dateTime(?resultTime)';
     	}
     }
     orderByQuery += ') ';

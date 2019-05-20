@@ -15,10 +15,15 @@ import axios from 'axios';
 import {PruebaTabsMat} from './SelectQueryTabs.js'
 import * as DataFunctions from '../Functions/DataFunctions.js'
 import { PlotlyChart } from './PlotlyChart';
+import { ChartSelector } from './ChartSelector'
 
 // ----------- CAMBIAR EN LA UNIÓN CON I4TSPS ---------
 const imgPath = './img/';
 // ----------------------------------------------------
+
+const headers = {
+	'Accept-Encoding': 'gzip'
+}
 
 const _ = require('lodash');
 const querystring = require('querystring');
@@ -29,7 +34,7 @@ const scatterChartName = 'Scatter';
 
 const orderBy = {'orderBy':true, 'order':'asc', 'orderField':'dateTime'};
 
-const sensorIconNames = ['tempIcon', 'resistIcon', 'ventIcon', 'rpmIcon', 'consumoIcon', 'presionIcon', 'tempFundidoIcon'];
+const sensorIconNames = ['tempIcon', 'resistIcon', 'ventIcon', 'rpmIcon', 'consumoIcon', 'presionIcon', 'tempFundidoIcon', 'bottleIcon'];
 const sensorIconTooltips = {
 	'tempIcon':'Temperatura',
 	'resistIcon':'Resistencia',
@@ -37,7 +42,8 @@ const sensorIconTooltips = {
 	'rpmIcon':'R.P.M. husillo',
 	'consumoIcon':'Consumo del motor',
 	'presionIcon':'Presión',
-	'tempFundidoIcon':'Temperatura de fundido'
+	'tempFundidoIcon':'Temperatura de fundido',
+	'bottleIcon':'Botellas por turno 1'
 };
 
 export class SensorsInfo extends React.Component {
@@ -106,7 +112,16 @@ export class SensorsInfo extends React.Component {
 			const typeClass = value.sensorType;
 			const zoneClass = (isNaN(value.zone)) ? ("") : ("zone" + value.zone);
 			const sensorIndex = selectedSensors.indexOf(sensorId);
+
+		
+
 			let classes;
+
+	           /*idoia: para crear la imagen en la que faltan sensores
+                if(sensorId==="UnknownResist3"||sensorId==="UnknownVent3"){}
+			else
+               fin idoia*/
+                
 			if (sensorIndex < 0)
 				classes = 'sensorDiv z-depth-1 ' + typeClass + ' ' + zoneClass;
 			else
@@ -121,7 +136,8 @@ export class SensorsInfo extends React.Component {
 
 		const iconDivs = sensorIcons.map((iconName) => {
 			const classes = 'iconDiv tooltipped ' + iconName;
-			const tooltipName = sensorIconTooltips[iconName];
+//const tooltipName = sensorIconTooltips[iconName];
+const tooltipName = iconName;
 			return(
 				<div key={classes} className={classes} data-position="top"
 					data-delay="10" data-tooltip={tooltipName}
@@ -142,18 +158,18 @@ export class SensorsInfo extends React.Component {
 
 		const cardContent = (!loadingQuery && !showChart)
 			? (<div>
-				<p> Sensores seleccionados: </p>
+				<p> Selected sensors: </p>
 					<div className='margin-left margin-top'>
 						{selectedSensorsNames}
 					</div>
 				</div>)
 			: (<p className='center'>
-					Pregunta realizada...
+					Query done...
 				</p>);
 
 		const cardValue = (selectedSensors.length === 0)
 			? (<p className='center'>
-					Selecciona uno o varios sensores para realizar consultas personalizadas.
+					Select one or more sensors to create customized queries.
 				</p>)
 			: (cardContent);
 
@@ -186,23 +202,53 @@ export class SensorsInfo extends React.Component {
 		// else if (filterValues['filter']) {
 		// 	chartType = scatterChartName;
 		// }
+		//console.log(sensors);
+		let query = Queries.getGraphRecommendation(
+							"informationQuery",
+							sensors[0],
+							this.props.graphURI)
 
-		this.setState({
-			showQueries: false,
-			loadingQuery: true,
-			queryInfor: infor,
-			queryType: 'infor',
-			chartType: chartType,
-			longDateFormat: longDateFormat,
+		//
+		axios.post(this.props.usedURL,
+			querystring.stringify({'query': query}, {headers: headers})
+		)
+		.then((response) => {
+			//console.log(response);
+			if (response.data["results"]["bindings"].length > 0){
+				let graph = response.data["results"]["bindings"][0]["graph"]["value"];
+				(chartType=="")?chartType = graph.split("#")[1]:chartType=chartType;
+				console.log("GRAPH: ",graph, chartType);
+
+				this.setState({
+					showQueries: false,
+					loadingQuery: true,
+					queryInfor: infor,
+					queryType: 'infor',
+					chartType: chartType,
+					longDateFormat: longDateFormat,
+				});
+		
+				let numberOfResponses = 0;
+				let sensorValues = {};
+				let sensorDatetimes = {};
+				let formInfo = DataFunctions.getFormInfo({'groupBy': groupBy, 'type': 'infor'});
+				let sensorsWithData = [];
+		
+				this.recursiveInforCall_New(sensors, groupBy, filter, filterValues, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
+
+			}
+			else{
+				alert("An error occurred, It was not possible to get the chart type");
+				this.newQuery();
+			}
+		})
+		.catch((error) => {
+			console.log(error);
+			alert("An error occurred, check the console.log for more info.");
+			this.newQuery();
 		});
 
-		let numberOfResponses = 0;
-		let sensorValues = {};
-		let sensorDatetimes = {};
-		let formInfo = DataFunctions.getFormInfo({'groupBy': groupBy, 'type': 'infor'});
-		let sensorsWithData = [];
-
-		this.recursiveInforCall_New(sensors, groupBy, filter, filterValues, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
+		
 	}
 
 	recursiveInforCall_New(selectedSensors, groupBy, filter, filterValues, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData){
@@ -214,7 +260,7 @@ export class SensorsInfo extends React.Component {
 						orderBy,
 						this.props.graphURI
 					);
-		console.log(query);
+		//console.log(query);
 		axios.post(this.props.usedURL,
 			querystring.stringify({'query': query})
 		)
@@ -282,22 +328,53 @@ export class SensorsInfo extends React.Component {
 
 		[chartType,longDateFormat] = DataFunctions.getGraphRecommendation("other", false, false);
 
-		this.setState({
-			showQueries: false,
-			loadingQuery: true,
-			queryInfor: infor,
-			queryType: 'otro',
-			chartType: chartType,
-			longDateFormat: longDateFormat,
+		let query = Queries.getGraphRecommendation(
+			"relationQuery",
+			askedSensors[0],
+			this.props.graphURI)
+
+		//
+		axios.post(this.props.usedURL,
+		querystring.stringify({'query': query})
+		)
+		.then((response) => {
+		//console.log(response);
+			if (response.data["results"]["bindings"].length > 0){
+				let graph = response.data["results"]["bindings"][0]["graph"]["value"];
+				(chartType=="")?chartType = graph.split("#")[1]:chartType=chartType;
+				console.log("GRAPH: ",graph, chartType);
+
+				this.setState({
+					showQueries: false,
+					loadingQuery: true,
+					queryInfor: infor,
+					queryType: 'otro',
+					chartType: chartType,
+					longDateFormat: longDateFormat,
+				});
+		
+				let numberOfResponses = 0;
+				let sensorValues = {};
+				let sensorDatetimes = {};
+				let formInfo = DataFunctions.getFormInfo({'groupBy': {}, 'type': 'otro'});
+				let sensorsWithData = [];
+		
+				this.recursiveOtroSensorCall_New(askedSensors, knownSensors, filterValues, filter, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
+			
+
+
+			}
+			else{
+				alert("An error occurred, It was not possible to get the chart type");
+				this.newQuery();
+			}
+		})
+		.catch((error) => {
+		console.log(error);
+		alert("An error occurred, check the console.log for more info.");
+		this.newQuery();
 		});
 
-		let numberOfResponses = 0;
-		let sensorValues = {};
-		let sensorDatetimes = {};
-		let formInfo = DataFunctions.getFormInfo({'groupBy': {}, 'type': 'otro'});
-		let sensorsWithData = [];
-
-		this.recursiveOtroSensorCall_New(askedSensors, knownSensors, filterValues, filter, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
 	}
 
 	recursiveOtroSensorCall_New(askedSensors, knownSensors, filterValues, filter, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData){
@@ -381,22 +458,53 @@ export class SensorsInfo extends React.Component {
 
 		[chartType,longDateFormat] = DataFunctions.getGraphRecommendation("anom", false, false);
 
-		this.setState({
-			showQueries: false,
-			loadingQuery: true,
-			queryInfor: infor,
-			queryType: 'anom',
-			chartType: chartType,
-			longDateFormat: longDateFormat,
+		let query = Queries.getGraphRecommendation(
+			"anomaliesQuery",
+			selectedSensors[0],
+			this.props.graphURI)
+
+		//
+		axios.post(this.props.usedURL,
+		querystring.stringify({'query': query})
+		)
+		.then((response) => {
+		//console.log(response);
+			if (response.data["results"]["bindings"].length > 0){
+				let graph = response.data["results"]["bindings"][0]["graph"]["value"];
+				(chartType=="")?chartType = graph.split("#")[1]:chartType=chartType;
+				console.log("GRAPH: ",graph, chartType);
+
+				this.setState({
+					showQueries: false,
+					loadingQuery: true,
+					queryInfor: infor,
+					queryType: 'anom',
+					chartType: chartType,
+					longDateFormat: longDateFormat,
+				});
+		
+				let numberOfResponses = 0;
+				let sensorValues = {};
+				let sensorDatetimes = {};
+				let formInfo = DataFunctions.getFormInfo({'groupBy': {}, 'type': 'anom'});
+				let sensorsWithData = [];
+		
+				this.recursiveAnomCall_New(selectedSensors, sensorsDir, parMotor, filter, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
+			
+
+
+			}
+			else{
+				alert("An error occurred, It was not possible to get the chart type");
+				this.newQuery();
+			}
+		})
+		.catch((error) => {
+		console.log(error);
+		alert("An error occurred, check the console.log for more info.");
+		this.newQuery();
 		});
 
-		let numberOfResponses = 0;
-		let sensorValues = {};
-		let sensorDatetimes = {};
-		let formInfo = DataFunctions.getFormInfo({'groupBy': {}, 'type': 'anom'});
-		let sensorsWithData = [];
-
-		this.recursiveAnomCall_New(selectedSensors, sensorsDir, parMotor, filter, numberOfResponses, sensorValues, sensorDatetimes, formInfo['selectedValues'], formInfo['selectedDateTime'], sensorsWithData);
 	}
 
 	recursiveAnomCall_New(selectedSensors, sensorsDir, parMotor, filter, nResponses, sensorValues, sensorDatetimes, selectedValues, selectedDateTime, sensorsWithData){
@@ -502,7 +610,7 @@ export class SensorsInfo extends React.Component {
 		const showChart = this.state.showChart;
 
 		const newQueryButton = (showChart)
-			? (<Button className='blue darken-3' onClick={() => {this.newQuery();}}> Nueva pregunta </Button>)
+			? (<Button className='blue darken-3' onClick={() => {this.newQuery();}}> New query </Button>)
 			: (<img className='loading' alt='Cargando...' src={`${imgPath}loading_bars.gif`}/>);
 
 		let tipoDePregunta;
@@ -512,7 +620,7 @@ export class SensorsInfo extends React.Component {
 
 		if (type === 'infor'){
 			let filtroFechas = '', filtroHoras = '', agrupVal = '';
-			tipoDePregunta = 'Información sobre los sensores: ';
+			tipoDePregunta = 'Information about sensors: ';
 			sensores = info['sensors'].map((sensorId, i) => {
 				const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
 				const sensorName = sensor.name;
@@ -521,10 +629,10 @@ export class SensorsInfo extends React.Component {
 					if (info['filterValues']['values'][sensorId]){
 						var values = info['filterValues']['values'][sensorId];
 						if (values.length > 1){
-							filtroValores += ', filtrado entre los valores ' + values[0] + ' y ' + values[1] + '.';
+							filtroValores += ', filtered between values ' + values[0] + ' and ' + values[1] + '.';
 						}
 						else{
-							filtroValores += ', filtrado para cuando su valor es ' + values[0] + '.';
+							filtroValores += ', filtered when its value is ' + values[0] + '.';
 						}
 					}
 				}
@@ -539,34 +647,34 @@ export class SensorsInfo extends React.Component {
 					let dateInicio = new Date(info['filter']['startDate']);
 					let dateFinal = new Date(info['filter']['endDate']);
 					let options = {year: 'numeric', month: 'long', day: 'numeric' };
-					let formDateInicio = dateInicio.toLocaleString('es-ES', options);
-					let formDateFinal = dateFinal.toLocaleString('es-ES', options);
-					filtroFechas = 'Entre el ' + formDateInicio + ' y el ' + formDateFinal + '. \n ';
+					let formDateInicio = dateInicio.toLocaleString('en-US', options);
+					let formDateFinal = dateFinal.toLocaleString('en-US', options);
+					filtroFechas = 'Between ' + formDateInicio + ' and ' + formDateFinal + '. \n ';
 				}
 				if(info['filter']['filterTime']){ //Hay filtro de horas
-					filtroHoras = 'Entre las ' + info['filter']['startTime'] + ' y las ' + info['filter']['endTime'] + '. \n ';
+					filtroHoras = 'Between ' + info['filter']['startTime'] + ' and ' + info['filter']['endTime'] + '. \n ';
 				}
 			}
 			if (info['groupBy']['groupBy']){ //Hay agrupaciones de datos
-				agrupVal = 'Se mostrará el valor '
+				agrupVal = 'It will be shown the '
 				if (info['groupBy']['avg']){ //Agrupados por día
-					agrupVal += ' medio,';
+					agrupVal += ' mean,';
 				}
 				if (info['groupBy']['min']){ //Agrupados por día
-					agrupVal += ' mínimo,';
+					agrupVal += ' minimum,';
 				}
 				if (info['groupBy']['max']){ //Agrupados por día
-					agrupVal += ' máximo,';
+					agrupVal += ' maximum,';
 				}
-				agrupVal += 'de los sensores '
+				agrupVal += ' value of the sensors '
 				if (info['groupBy']['groupByDate']){ //Agrupados por día
-					agrupVal += ' agrupado por días, mostrando un valor por día.';
+					agrupVal += ' grouped by day, showing a value by day.';
 				}
 				else if (info['groupBy']['groupByHour']){ //Agrupados por día
-					agrupVal += ' agrupado por horas, mostrando un valor por hora.';
+					agrupVal += ' grouped by hour, showing a value by hour.';
 				}
 				else if (info['groupBy']['groupByAll']){ //Agrupados por día
-					agrupVal += ' agrupado en un único valor por cada sensor.';
+					agrupVal += ' grouped in a single value by each sensor.';
 				}
 			}
 			resumenInfo = (<div>
@@ -576,15 +684,15 @@ export class SensorsInfo extends React.Component {
 							</div>);
 		}
 		else if (type === 'otro'){
-			tipoDePregunta = 'Valores de los sensores: ';
+			tipoDePregunta = 'Value of sensors: ';
 			let filtroFechas = '';
 			if(info['filter']['filterDate']){ //Hay filtro de fechas
 				let dateInicio = new Date(info['filter']['startDate']);
 				let dateFinal = new Date(info['filter']['endDate']);
 				let options = {year: 'numeric', month: 'long', day: 'numeric' };
-				let formDateInicio = dateInicio.toLocaleString('es-ES', options);
-				let formDateFinal = dateFinal.toLocaleString('es-ES', options);
-				filtroFechas = 'Entre el ' + formDateInicio + ' y el ' + formDateFinal + '. \n ';
+				let formDateInicio = dateInicio.toLocaleString('en-US', options);
+				let formDateFinal = dateFinal.toLocaleString('en-US', options);
+				filtroFechas = 'Between ' + formDateInicio + ' and ' + formDateFinal + '. \n ';
 			}
 			sensores = info['sensors'].map((sensorId, i) => {
 				const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
@@ -595,7 +703,7 @@ export class SensorsInfo extends React.Component {
 					</li>
 				);
 			});
-			let sentenceOtros = 'Cuando los siguientes sensores toman estos valores: ';
+			let sentenceOtros = 'When the following sensors have these values: ';
 			let otrosSensores = _.map(info['knownSensors'], (value, sensorId) => {
 				const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
 				const sensorName = sensor.name;
@@ -604,19 +712,19 @@ export class SensorsInfo extends React.Component {
 					if (info['filterValues']['values'][sensorId]){
 						var values = info['filterValues']['values'][sensorId];
 						if (values.length > 1){
-							filtroValores = ', filtrado entre los valores ' + values[0] + ' y ' + values[1] + '. \n ';
+							filtroValores = ', filtered between the values ' + values[0] + ' and ' + values[1] + '. \n ';
 						}
 						else{
-							filtroValores = ', filtrado para el valor ' + values[0] + '. \n ';
+							filtroValores = ', filtered for the value ' + values[0] + '. \n ';
 						}
 					}
 				}
 				let finalValue = value;
 				if (value === 'min'){
-					finalValue = 'su valor mínimo';
+					finalValue = 'minimum value';
 				}
 				else if (value === 'max'){
-					finalValue = 'su valor máximo';
+					finalValue = 'maximum value';
 				}
 				return(
 					<li key={sensorId}>
@@ -635,7 +743,7 @@ export class SensorsInfo extends React.Component {
 							</div>);
 		}
 		else {
-			tipoDePregunta = 'Mostrar los valores de los sensores cuando no siguen esta relación: ';
+			tipoDePregunta = 'Showing the value of the sensors when they do not keep the following relation: ';
 			resumenInfo = null;
 			sensores = _.map(info['sensorsDir'], (value, sensorId) => {
 				const sensor = _.find(this.props.infoSensores, ['indicatorId', sensorId]);
@@ -664,7 +772,7 @@ export class SensorsInfo extends React.Component {
 		return (
 			<div className="card">
 	            <div className="card-content">
-	              <span className="card-title blue-text text-darken-3">Resumen de la pregunta: </span>
+	              <span className="card-title blue-text text-darken-3">Summary of the query: </span>
 					<p> {tipoDePregunta} </p>
 					<div className='margin-left margin-top'>
 						 {sensores}
@@ -720,7 +828,7 @@ export class SensorsInfo extends React.Component {
 
 		const noDataInfo = noDataCharts.map((sensorId) => {
 			return(
-				<p key={sensorId}> No hay datos disponibles del sensor {sensorId}</p>
+				<p key={sensorId}> There is no available information of sensor {sensorId}</p>
 			);
 		});
 
@@ -731,11 +839,18 @@ export class SensorsInfo extends React.Component {
 
 		const noAnomCard = (noAnom && showChart) &&
 			(<Card className='center green-text'>
-				No se ha encontrado ninguna anomalía en la relación especificada.
+				No anomaly found in the specified relationship.
 			</Card>);
 
 		const chartCard = (showChart && !noAnom) &&
 			(<PlotlyChart
+				allChartData={allChartData}
+				chartType={chartType}
+				longDateFormat={longDateFormat}
+			/>);
+
+		const chartSelectorCard = (showChart && !noAnom) &&
+			(<ChartSelector
 				allChartData={allChartData}
 				chartType={chartType}
 				longDateFormat={longDateFormat}
@@ -754,11 +869,18 @@ export class SensorsInfo extends React.Component {
 						{loadingQueryCard}
 					</Col>
 				</Row>
+				<Row>
+					<Col s={12} m={6} l={11}>
+						{noAnomCard}
+						{noDataCard}
+						{chartCard}
+					</Col>
+					<Col s={12} m={6} l={1}>
+						{chartSelectorCard}
+					</Col>
+				</Row>
 				<Row s={12}>
 					{loadingChartCard}
-					{noAnomCard}
-					{chartCard}
-					{noDataCard}
 				</Row>
 			</div>
 		);
